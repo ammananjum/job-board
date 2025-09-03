@@ -41,14 +41,13 @@ const Register = () => {
     setSuccess("");
 
     try {
-      await axios.post("https://9ace0c41-d172-46f8-ad9f-22a593437d12-00-2jpuy195o8qc9.sisko.replit.dev/api/auth/register", {
+      await axios.post("http://localhost:5000/api/auth/register", {
         name,
         email,
         password,
         role,
       });
 
-      
       setSuccess("Registration successful! Please login now.");
       setName("");
       setEmail("");
@@ -65,13 +64,32 @@ const Register = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-200 via-purple-300 to-black text-black flex flex-col">
       {/* Navbar */}
       <header className="p-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between relative">
           <div className="flex items-center space-x-3">
             <div className="h-14 w-14 rounded-full border-4 border-purple-600 overflow-hidden flex items-center justify-center">
               <img src="/logoX.jpg" alt="Logo" className="h-full w-full object-cover" />
             </div>
             <h1 className="text-3xl font-extrabold text-black">JobBoardX</h1>
           </div>
+          {/* Centered nav links */}
+          <nav className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex space-x-8">
+            {["Home", "Top Companies", "Method", "About", "Contact"].map((link) => (
+              <button
+                key={link}
+                onClick={() =>
+                  link === "Home"
+                    ? navigate("/")
+                    : window.scrollTo({
+                        top: document.getElementById(link.toLowerCase())?.offsetTop,
+                        behavior: "smooth",
+                      })
+                }
+                className="text-black font-bold text-2xl hover:underline hover:underline-offset-4 hover:text-purple-700"
+              >
+                {link}
+              </button>
+            ))}
+          </nav>
         </div>
       </header>
 
