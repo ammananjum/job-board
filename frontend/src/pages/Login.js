@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import { FaBars, FaTimes } from "react-icons/fa";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -35,26 +37,18 @@ const Login = () => {
     e.preventDefault();
     setError("");
     try {
-      const { data } = await axios.post("https://9ace0c41-d172-46f8-ad9f-22a593437d12-00-2jpuy195o8qc9.sisko.replit.dev/api/auth/login", {
-        email,
-        password,
-      });
+      const { data } = await axios.post(
+        "https://9ace0c41-d172-46f8-ad9f-22a593437d12-00-2jpuy195o8qc9.sisko.replit.dev/api/auth/login",
+        { email, password }
+      );
 
-      console.log("Frontend received login response:", data); 
-
-      // Save user info (backend returns role directly)
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
       localStorage.setItem("userId", data._id);
 
-      // Redirect by role
-      if (data.role === "employer") {
-        navigate("/employer-dashboard");
-      } else if (data.role === "developer") {
-        navigate("/developer-dashboard");
-      } else {
-        navigate("/"); // fallback if role is missing
-      }
+      if (data.role === "employer") navigate("/employer-dashboard");
+      else if (data.role === "developer") navigate("/developer-dashboard");
+      else navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password");
     }
@@ -64,25 +58,69 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-200 via-purple-300 to-black text-black flex flex-col">
       {/* Navbar */}
       <header className="p-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          {/* Logo */}
           <div className="flex items-center space-x-3">
             <div className="h-14 w-14 rounded-full border-4 border-purple-600 overflow-hidden flex items-center justify-center">
               <img src="/logoX.jpg" alt="Logo" className="h-full w-full object-cover" />
             </div>
             <h1 className="text-3xl font-extrabold text-black">JobBoardX</h1>
           </div>
+
+          {/* Desktop menu */}
           <nav className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex space-x-10">
-            {["Top Companies", "Method", "About", "Contact", "Home"].map((link) => (
-              <a
+  {["Home", "Top Companies", "Method", "About", "Contact"].map((link) => (
+    <button
+      key={link}
+      onClick={() =>
+        link === "Home"
+          ? navigate("/")
+          : window.scrollTo({
+              top: document.getElementById(link.toLowerCase())?.offsetTop,
+              behavior: "smooth",
+            })
+      }
+      className="text-black font-bold text-2xl hover:underline hover:underline-offset-4 hover:text-purple-700"
+    >
+      {link}
+    </button>
+  ))}
+</nav>
+
+
+          {/* Mobile menu icon */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="text-black text-2xl"
+            >
+              {menuOpen ? <FaTimes /> : <FaBars />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div className="md:hidden mt-2 bg-white dark:bg-gray-800 rounded shadow p-4 flex flex-col space-y-2">
+            {["Home", "Top Companies", "Method", "About", "Contact"].map((link) => (
+              <button
                 key={link}
-                href={link === "Home" ? "/" : `#${link.toLowerCase().replace(" ", "-")}`}
-                className="text-black font-bold text-xl hover:underline hover:underline-offset-4 hover:text-purple-700"
+                onClick={() => {
+                  setMenuOpen(false);
+                  link === "Home"
+                    ? navigate("/")
+                    : window.scrollTo({
+                        top: document.getElementById(link.toLowerCase())?.offsetTop,
+                        behavior: "smooth",
+                      });
+                }}
+                className="text-black font-bold text-lg hover:underline hover:underline-offset-4 hover:text-purple-700"
               >
                 {link}
-              </a>
+              </button>
             ))}
-          </nav>
-        </div>
+          </div>
+        )}
       </header>
 
       {/* Main content */}
@@ -129,7 +167,10 @@ const Login = () => {
         <div className="w-full md:w-1/2 flex items-center justify-center relative overflow-hidden">
           <div
             className="flex transition-transform duration-1000 ease-in-out"
-            style={{ transform: `translateX(-${activeIndex * 100}%)`, width: `${pairs.length * 100}%` }}
+            style={{
+              transform: `translateX(-${activeIndex * 100}%)`,
+              width: `${pairs.length * 100}%`,
+            }}
           >
             {pairs.map((pair, idx) => (
               <div key={idx} className="flex-shrink-0 flex justify-center items-center" style={{ width: "100%" }}>
