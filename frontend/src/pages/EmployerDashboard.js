@@ -18,7 +18,7 @@ const EmployerDashboard = () => {
   const fetchJobs = async () => {
     setLoadingJobs(true);
     try {
-      const { data } = await axios.get("http://localhost:5000/api/jobs", {
+      const { data } = await axios.get("https://9ace0c41-d172-46f8-ad9f-22a593437d12-00-2jpuy195o8qc9.sisko.replit.dev/api/jobs", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setJobs(data.jobs.filter((job) => job.employer._id === userId));
