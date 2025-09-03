@@ -38,13 +38,10 @@ const Login = () => {
     setError("");
     try {
       const { data } = await axios.post(
-<<<<<<< HEAD
-        "https://9ace0c41-d172-46f8-ad9f-22a593437d12-00-2jpuy195o8qc9.sisko.replit.dev/api/auth/login",
-=======
-        "http://localhost:5000/api/auth/login",
->>>>>>> 403ae7b (Update Login and Register pages)
-        { email, password }
-      );
+  "https://9ace0c41-d172-46f8-ad9f-22a593437d12-00-2jpuy195o8qc9.sisko.replit.dev/api/auth/login",
+  { email, password }
+);
+
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
