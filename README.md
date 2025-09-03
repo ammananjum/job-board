@@ -35,10 +35,3 @@ JobBoardX is designed for managing job listings, job search functionality, and u
 
 ---
 
-## Installation
-
-### Clone the Repository
-
-```bash
-git clone https://github.com/ammananjum/job-board.git
-cd job-board
