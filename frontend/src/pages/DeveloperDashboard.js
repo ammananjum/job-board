@@ -13,7 +13,7 @@ const DeveloperDashboard = () => {
   const fetchApplications = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:5000/api/applications/me",
+        "https://9ace0c41-d172-46f8-ad9f-22a593437d12-00-2jpuy195o8qc9.sisko.replit.dev/api/applications/me",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setApplications(data);
@@ -48,7 +48,7 @@ const DeveloperDashboard = () => {
               Welcome, Developer
             </h1>
             <p className="text-2xl italic text-black dark:text-gray-300">
-              "Code your way to success! 🚀"
+              "Code your way to success! "
             </p>
           </div>
           <div className="mt-12 flex flex-col space-y-4">
