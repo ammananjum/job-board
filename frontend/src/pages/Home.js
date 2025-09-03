@@ -47,7 +47,7 @@ const Home = () => {
   // Fetch top companies for featured section
   const fetchCompanies = async () => {
     try {
-      const { data } = await axios.get("http://localhost:5000/api/companies");
+      const { data } = await axios.get("https://9ace0c41-d172-46f8-ad9f-22a593437d12-00-2jpuy195o8qc9.sisko.replit.dev/api/companies");
       setCompanies(data.slice(0, 3)); // Top 3 companies
     } catch (err) {
       console.log("Failed to fetch companies");
