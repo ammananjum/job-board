@@ -35,19 +35,19 @@ const Login = () => {
     e.preventDefault();
     setError("");
     try {
-      const { data } = await axios.post("http://localhost:5000/api/auth/login", {
+      const { data } = await axios.post("https://9ace0c41-d172-46f8-ad9f-22a593437d12-00-2jpuy195o8qc9.sisko.replit.dev/api/auth/login", {
         email,
         password,
       });
 
-      console.log("Frontend received login response:", data); // 👈 NEW log
+      console.log("Frontend received login response:", data); 
 
-      // ✅ Save user info (backend returns role directly)
+      // Save user info (backend returns role directly)
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
       localStorage.setItem("userId", data._id);
 
-      // ✅ Redirect by role
+      // Redirect by role
       if (data.role === "employer") {
         navigate("/employer-dashboard");
       } else if (data.role === "developer") {
