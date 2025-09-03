@@ -1,0 +1,4 @@
+# Root ignores
+node_modules/
+*.log
+logs/
