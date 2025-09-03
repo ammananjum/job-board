@@ -32,7 +32,7 @@ const Home = () => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `http://localhost:5000/api/jobs?page=${pageNum}`
+        `https://9ace0c41-d172-46f8-ad9f-22a593437d12-00-2jpuy195o8qc9.sisko.replit.dev/api/jobs?page=${pageNum}`
       );
       setJobs(data.jobs || data);
       setPage(data.page || 1);
