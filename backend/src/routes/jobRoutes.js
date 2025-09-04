@@ -5,6 +5,7 @@ const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
+/* ----------------- CREATE JOB ----------------- */
 // @route   POST /api/jobs
 // @desc    Create a new job (Employer only)
 // @access  Private
@@ -24,10 +25,12 @@ router.post(
       throw new Error("Please fill all fields");
     }
 
+    const skillsArray = typeof skills === "string" ? skills.split(",").map((s) => s.trim()) : skills;
+
     const job = await Job.create({
       title,
       description,
-      skills,
+      skills: skillsArray,
       salary,
       location,
       employer: req.user._id,
@@ -37,6 +40,7 @@ router.post(
   })
 );
 
+/* ----------------- GET ALL JOBS ----------------- */
 // @route   GET /api/jobs
 // @desc    Get jobs with search, filters & pagination
 // @access  Public
@@ -45,7 +49,6 @@ router.get(
   asyncHandler(async (req, res) => {
     const { keyword, location, minSalary, maxSalary, skills, page, limit } = req.query;
 
-    // Build query object
     let query = {};
 
     if (keyword) {
@@ -66,13 +69,12 @@ router.get(
     }
 
     if (skills) {
-      const skillArray = skills.split(",").map((s) => s.trim());
-      query.skills = { $all: skillArray };
+      const skillArray = skills.split(",").map((s) => s.trim()).filter(Boolean);
+      if (skillArray.length > 0) query.skills = { $all: skillArray };
     }
 
-    // Pagination setup
     const pageNumber = Number(page) || 1;
-    const pageSize = Number(limit) || 10; // default 10 jobs per page
+    const pageSize = Number(limit) || 10;
 
     const total = await Job.countDocuments(query);
 
@@ -87,6 +89,76 @@ router.get(
       pages: Math.ceil(total / pageSize),
       totalJobs: total,
     });
+  })
+);
+
+/* ----------------- GET JOB BY ID ----------------- */
+// @route   GET /api/jobs/:id
+// @desc    Get a single job by ID
+// @access  Public
+router.get(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    const job = await Job.findById(req.params.id).populate("employer", "name email");
+    if (!job) {
+      res.status(404);
+      throw new Error("Job not found");
+    }
+    res.json(job);
+  })
+);
+
+/* ----------------- UPDATE JOB ----------------- */
+// @route   PUT /api/jobs/:id
+// @desc    Update a job (Employer only)
+// @access  Private
+router.put(
+  "/:id",
+  protect,
+  asyncHandler(async (req, res) => {
+    const job = await Job.findById(req.params.id);
+    if (!job) {
+      res.status(404);
+      throw new Error("Job not found");
+    }
+    if (job.employer.toString() !== req.user._id.toString()) {
+      res.status(403);
+      throw new Error("You are not authorized to edit this job");
+    }
+
+    const { title, description, skills, salary, location } = req.body;
+
+    job.title = title || job.title;
+    job.description = description || job.description;
+    job.skills = skills ? skills.split(",").map((s) => s.trim()) : job.skills;
+    job.salary = salary || job.salary;
+    job.location = location || job.location;
+
+    const updatedJob = await job.save();
+    res.json(updatedJob);
+  })
+);
+
+/* ----------------- DELETE JOB ----------------- */
+// @route   DELETE /api/jobs/:id
+// @desc    Delete a job (Employer only)
+// @access  Private
+router.delete(
+  "/:id",
+  protect,
+  asyncHandler(async (req, res) => {
+    const job = await Job.findById(req.params.id);
+    if (!job) {
+      res.status(404);
+      throw new Error("Job not found");
+    }
+    if (job.employer.toString() !== req.user._id.toString()) {
+      res.status(403);
+      throw new Error("You are not authorized to delete this job");
+    }
+
+    await job.remove();
+    res.json({ message: "Job removed" });
   })
 );
 
