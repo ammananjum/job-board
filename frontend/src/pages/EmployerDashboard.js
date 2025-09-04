@@ -11,6 +11,15 @@ const EmployerDashboard = () => {
   const [loadingApplicants, setLoadingApplicants] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    skills: "",
+    salary: "",
+    location: "",
+  });
+  const [editingJobId, setEditingJobId] = useState(null);
+
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
 
@@ -18,7 +27,7 @@ const EmployerDashboard = () => {
   const fetchJobs = async () => {
     setLoadingJobs(true);
     try {
-      const { data } = await axios.get("https://9ace0c41-d172-46f8-ad9f-22a593437d12-00-2jpuy195o8qc9.sisko.replit.dev/api/jobs", {
+      const { data } = await axios.get("http://localhost:5000/api/jobs", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setJobs(data.jobs.filter((job) => job.employer._id === userId));
@@ -58,6 +67,40 @@ const EmployerDashboard = () => {
       fetchApplicants(selectedJob);
     } catch (err) {
       toast.error("Failed to update status");
+    }
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Create or edit job
+  const handleJobSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingJobId) {
+        // Edit job
+        await axios.put(
+          `http://localhost:5000/api/jobs/${editingJobId}`,
+          formData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success("Job updated successfully");
+      } else {
+        // Create job
+        await axios.post(
+          "http://localhost:5000/api/jobs",
+          formData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success("Job created successfully");
+      }
+      setFormData({ title: "", description: "", skills: "", salary: "", location: "" });
+      setEditingJobId(null);
+      fetchJobs();
+    } catch (err) {
+      toast.error("Failed to save job");
     }
   };
 
@@ -106,6 +149,65 @@ const EmployerDashboard = () => {
             Employer Dashboard
           </h1>
 
+          {/* Job Form */}
+          <div className="mb-6 p-6 bg-white dark:bg-gray-800 rounded-xl shadow">
+            <h2 className="text-xl font-semibold mb-4 dark:text-white">
+              {editingJobId ? "Edit Job" : "Create New Job"}
+            </h2>
+            <form onSubmit={handleJobSubmit} className="space-y-3">
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                placeholder="Job Title"
+                className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+                required
+              />
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Job Description"
+                className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+                required
+              />
+              <input
+                type="text"
+                name="skills"
+                value={formData.skills}
+                onChange={handleInputChange}
+                placeholder="Skills (comma separated)"
+                className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+                required
+              />
+              <input
+                type="number"
+                name="salary"
+                value={formData.salary}
+                onChange={handleInputChange}
+                placeholder="Salary"
+                className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+                required
+              />
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+                placeholder="Location"
+                className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+                required
+              />
+              <button
+                type="submit"
+                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                {editingJobId ? "Update Job" : "Create Job"}
+              </button>
+            </form>
+          </div>
+
           {/* Jobs Section */}
           <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Your Jobs</h2>
           {loadingJobs ? (
@@ -117,19 +219,51 @@ const EmployerDashboard = () => {
               {jobs.map((job) => (
                 <div
                   key={job._id}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition cursor-pointer"
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-2xl transition"
                 >
                   <h3 className="text-xl font-semibold mb-2 dark:text-white">{job.title}</h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-2">{job.description}</p>
                   <p className="text-sm mb-1 dark:text-gray-200"><strong>Skills:</strong> {job.skills.join(", ")}</p>
                   <p className="text-sm mb-1 dark:text-gray-200"><strong>Salary:</strong> ${job.salary}</p>
                   <p className="text-sm mb-2 dark:text-gray-200"><strong>Location:</strong> {job.location}</p>
-                  <button
-                    onClick={() => fetchApplicants(job._id)}
-                    className="mt-2 w-full bg-blue-600 text-white rounded-full py-2 font-semibold hover:bg-blue-700 transition"
-                  >
-                    View Applicants
-                  </button>
+
+                  <div className="flex space-x-2 mt-2">
+                    <button
+                      onClick={() => {
+                        setEditingJobId(job._id);
+                        setFormData({
+                          title: job.title,
+                          description: job.description,
+                          skills: job.skills.join(", "),
+                          salary: job.salary,
+                          location: job.location,
+                        });
+                      }}
+                      className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (window.confirm("Are you sure you want to delete this job?")) {
+                          await axios.delete(`http://localhost:5000/api/jobs/${job._id}`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                          });
+                          toast.success("Job deleted successfully");
+                          fetchJobs();
+                        }
+                      }}
+                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => fetchApplicants(job._id)}
+                      className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      View Applicants
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
